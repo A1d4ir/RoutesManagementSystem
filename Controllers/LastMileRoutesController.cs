@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using RoutesManagementSystem.API.Models;
 using RoutesManagementSystem.API.Services;
@@ -10,40 +10,67 @@ namespace RoutesManagementSystem.API.Controllers
     [Route("api/last-mile-routes")]
     public class LastMileRoutesController : ControllerBase
     {
-        private readonly ILastMileRoutesRepository _routesRepository;
+        private readonly ILastMileRoutesRepository _lastMileRoutesRepository;
         private readonly IRouteTypeRepository _routeTypeRepository;
         private readonly IMapper _mapper;
 
         public LastMileRoutesController(
-            ILastMileRoutesRepository routesRepository,
+            ILastMileRoutesRepository lastMileRoutesRepository,
             IMapper mapper,
             IRouteTypeRepository routeTypeRepository
         )
         {
-            _routesRepository = routesRepository;
+            _lastMileRoutesRepository = lastMileRoutesRepository;
             _routeTypeRepository = routeTypeRepository;
             _mapper = mapper;
         }
 
-        [HttpGet("{id}", Name = "GetRouteById")]
-        public ActionResult<RouteBaseDto> GetRouteById(int id)
+        [HttpGet("{id}", Name = "GetById")]
+        public async Task<ActionResult<LastMileRouteGetByIdDto>> GetById(int id)
         {
+            if( id < 0 )
+            {
+                return BadRequest();
+            }
             // Find route
-            var routeToReturn = RoutesDataStore.Current.Routes
-                .FirstOrDefault(r => r.Id == id);
-
+            var routeToReturn = await _lastMileRoutesRepository.GetLastMileRouteById(id);
             if (routeToReturn == null)
             {
                 return NotFound();
             }
 
-            return Ok(routeToReturn);
+            if(routeToReturn.ProductType != 3)
+            {
+                return BadRequest("Unsupported productType");
+            }
+
+            LastMileRouteGetByIdDto lastMileRoute = _mapper.Map<LastMileRouteGetByIdDto>(routeToReturn);
+            lastMileRoute.Identify = routeToReturn.LastMileRoute!.Identify;
+            lastMileRoute.CityId = routeToReturn.LastMileRoute.CityId;
+            lastMileRoute.ConfigurationType = routeToReturn.LastMileRoute.ConfigurationType.ToString();
+            lastMileRoute.MaximumLoads = routeToReturn.LastMileRoute.MaximumLoads;
+            lastMileRoute.MinimumLoads = routeToReturn.LastMileRoute.MinimumLoads;
+            lastMileRoute.DaysForDelivery = routeToReturn.LastMileRoute.DaysForDelivery;
+            ICollection<SettlementDto> settlements = new List<SettlementDto>();
+            foreach (var settlement in routeToReturn.LastMileRoute.Settlements)
+            {
+                settlements.Add(_mapper.Map<SettlementDto>(settlement));
+            }
+            lastMileRoute.Settlements = settlements;
+
+            return Ok(lastMileRoute);
         }
 
         [HttpPost]
         public async Task<ActionResult<PostResponseDto>> CreateRoute(LastMileRoutesPostRequestDto lastMileRoute)
         {
             List<string> errors = new List<string>();
+            if (lastMileRoute.ProductType != 3)
+            {
+                errors.Add("Unsupported productType");
+                return BadRequest(new { errors = errors });
+            }
+
             // Verify the provided route type
             var routeTypeProvided = await _routeTypeRepository.GetRouteTypeAsync(lastMileRoute.RouteTypeId);
             if (routeTypeProvided == null)
@@ -56,9 +83,53 @@ namespace RoutesManagementSystem.API.Controllers
             var lastMileRouteEntity = _mapper.Map<Entities.LastMileRoute>(lastMileRoute);
 
 
-            int routeIdSaved = await _routesRepository.AddLastMileRoute(routeBase, lastMileRouteEntity);
+            int routeIdSaved = await _lastMileRoutesRepository.AddLastMileRoute(routeBase, lastMileRouteEntity);
 
             return CreatedAtAction(nameof(CreateRoute), new PostResponseDto() { Id = routeIdSaved});
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> PartialUpdate(
+            int id, 
+            JsonPatchDocument<LastMileRouteForUpdateDto> routeToUpdate
+        )
+        {
+            var routeEntity = await _lastMileRoutesRepository.GetLastMileRouteById(id);
+            if (routeEntity == null)
+            {
+                return NotFound();
+            }
+
+            var routeToPatch = _mapper.Map<LastMileRouteForUpdateDto>(routeEntity);
+            routeToUpdate.ApplyTo(routeToPatch, ModelState);
+
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if(!TryValidateModel(routeToPatch))
+            {
+                return BadRequest(ModelState);
+            }
+
+            _mapper.Map(routeToPatch, routeEntity);
+            await _lastMileRoutesRepository.SaveChangesAsync();
+
+            var lastMileRouteEntity = routeEntity.LastMileRoute;
+            var lastMileRouteToPatch = _mapper.Map<LastMileRouteForUpdateDto>(lastMileRouteEntity);
+            routeToUpdate.ApplyTo(lastMileRouteToPatch, ModelState);
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if(!TryValidateModel(lastMileRouteToPatch))
+            {
+                return BadRequest(ModelState);
+            }
+            _mapper.Map(lastMileRouteToPatch, lastMileRouteEntity);
+            await _lastMileRoutesRepository.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

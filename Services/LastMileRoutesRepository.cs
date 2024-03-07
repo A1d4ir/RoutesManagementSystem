@@ -1,4 +1,5 @@
-﻿using RoutesManagementSystem.API.DbContexts;
+﻿using Microsoft.EntityFrameworkCore;
+using RoutesManagementSystem.API.DbContexts;
 using RoutesManagementSystem.API.Entities;
 
 namespace RoutesManagementSystem.API.Services
@@ -30,6 +31,17 @@ namespace RoutesManagementSystem.API.Services
             }
 
             return route.Id;
+        }
+
+        public async Task<RoutesManagementSystem.API.Entities.Route?> GetLastMileRouteById(int id)
+        {
+           var result = await _context.Routes
+                .Include(r => r.LastMileRoute)
+                .ThenInclude(l => l.Settlements)
+                .Include(r => r.RouteType)
+                .Where(r => r.Id == id)
+                .FirstOrDefaultAsync();
+            return result;
         }
 
         public async Task<bool> SaveChangesAsync()

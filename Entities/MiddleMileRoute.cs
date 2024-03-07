@@ -6,7 +6,7 @@ namespace RoutesManagementSystem.API.Entities
     public class MiddleMileRoute
     {
         [ForeignKey("RouteId")]
-        public RoutesManagementSystem.API.Entities.Route? Route { get; set; }
+        public virtual RoutesManagementSystem.API.Entities.Route? Route { get; set; }
 
         [Key]
         public int RoputeId { get; set; }

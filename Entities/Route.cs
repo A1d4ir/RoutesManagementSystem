@@ -22,14 +22,14 @@ namespace RoutesManagementSystem.API.Entities
         public string Description { get; set; }
 
         [ForeignKey("RouteTypeId")]
-        public RouteType? RouteType { get; set; }
+        public virtual RouteType? RouteType { get; set; }
 
         public int RouteTypeId { get; set; }
         public int ProductType { get; set; }
 
-        public LastMileRoute? LastMileRoute { get; set; }
+        public virtual LastMileRoute? LastMileRoute { get; set; }
 
-        public MiddleMileRoute? MiddleMileRoute { get; set; }
+        public virtual MiddleMileRoute? MiddleMileRoute { get; set; }
 
         public DateTime? DeletedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

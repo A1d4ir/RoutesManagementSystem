@@ -7,7 +7,7 @@ namespace RoutesManagementSystem.API.Entities
     public class LastMileRoute
     {
         [ForeignKey("RouteId")]
-        public RoutesManagementSystem.API.Entities.Route? Route { get; set; }
+        public virtual RoutesManagementSystem.API.Entities.Route? Route { get; set; }
         [Key]
         public int RouteId { get; set; }
 
@@ -29,6 +29,6 @@ namespace RoutesManagementSystem.API.Entities
         [Required]
         public int DaysForDelivery { get; set; }
 
-        public ICollection<Settlement> Settlements { get; set; } = new List<Settlement>();
+        public virtual ICollection<Settlement> Settlements { get; set; } = new List<Settlement>();
     }
 }

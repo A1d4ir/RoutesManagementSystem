@@ -8,6 +8,7 @@ namespace RoutesManagementSystem.API.Services
             RoutesManagementSystem.API.Entities.Route route,
             LastMileRoute lastMileRoute
         );
+        Task<RoutesManagementSystem.API.Entities.Route?> GetLastMileRouteById(int id);
         Task<bool> SaveChangesAsync();
     }
 }
