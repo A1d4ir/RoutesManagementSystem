@@ -8,6 +8,9 @@ namespace RoutesManagementSystem.API.Profiles
         {
             CreateMap<Entities.Route, Models.LastMileRoutesPostRequestDto>();
             CreateMap<Models.LastMileRoutesPostRequestDto, Entities.Route>();
+
+            CreateMap<Entities.Route, Models.MiddleMileRoutePostRequestDto>();
+            CreateMap<Models.MiddleMileRoutePostRequestDto, Entities.Route>();
         }
     }
 }
