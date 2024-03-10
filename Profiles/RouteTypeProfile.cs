@@ -7,7 +7,7 @@ namespace RoutesManagementSystem.API.Profiles
         public RouteTypeProfile()
         {
             CreateMap<Entities.RouteType, Models.RouteTypeDto>();
-            CreateMap<Models.RouteTypeDto, Models.RouteTypeDto>();
+            CreateMap<Models.RouteTypeDto, Entities.RouteType>();
         }
     }
 }

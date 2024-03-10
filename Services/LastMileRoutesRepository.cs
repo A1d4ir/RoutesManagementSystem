@@ -39,7 +39,7 @@ namespace RoutesManagementSystem.API.Services
                 .Include(r => r.LastMileRoute)
                 .ThenInclude(l => l.Settlements)
                 .Include(r => r.RouteType)
-                .Where(r => r.Id == id)
+                .Where(r => r.Id == id && r.DeletedAt == null)
                 .FirstOrDefaultAsync();
             return result;
         }

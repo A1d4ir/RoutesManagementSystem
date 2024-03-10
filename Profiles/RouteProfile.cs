@@ -11,6 +11,9 @@ namespace RoutesManagementSystem.API.Profiles
 
             CreateMap<Entities.Route, Models.MiddleMileRoutePostRequestDto>();
             CreateMap<Models.MiddleMileRoutePostRequestDto, Entities.Route>();
+
+            CreateMap<Entities.Route, Models.RouteBaseDto>();
+            CreateMap<Models.RouteBaseDto, Entities.Route>();
         }
     }
 }

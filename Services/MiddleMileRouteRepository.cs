@@ -34,7 +34,7 @@ namespace RoutesManagementSystem.API.Services
             var result = await _context.Routes
                 .Include(r => r.MiddleMileRoute)
                 .Include(r => r.RouteType)
-                .Where(r => r.Id == id)
+                .Where(r => r.Id == id && r.DeletedAt == null)
                 .FirstOrDefaultAsync();
             return result;
         }

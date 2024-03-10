@@ -23,6 +23,7 @@ builder.Services.AddDbContext<RoutesManagerDbContext>(
 builder.Services.AddScoped<ILastMileRoutesRepository, LastMileRoutesRepository>();
 builder.Services.AddScoped<IRouteTypeRepository, RouteTypeRepository>();
 builder.Services.AddScoped<IMiddleMileRouteRepository, MiddleMileRouteRepository>();
+builder.Services.AddScoped<IRouteService, RouteService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
